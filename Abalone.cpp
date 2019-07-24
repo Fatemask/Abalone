@@ -11,6 +11,7 @@ public:
 	abalone();
 	void display();
 	void disp();
+	void move();
 	bool isValid();              //will call all validation functions
 	bool isStringValid();       //string is properly entered
 	bool isPosValid();          // entered coordinates exist on board
