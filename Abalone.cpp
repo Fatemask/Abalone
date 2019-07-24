@@ -11,6 +11,13 @@ public:
 	abalone();
 	void display();
 	void disp();
+	bool isValid();              //will call all validation functions
+	bool isStringValid();       //string is properly entered
+	bool isPosValid();          // entered coordinates exist on board
+	int mod();					//tokens moving
+	bool winner();				// two players are 0 and 1
+	int noOfWhites();
+	int noOfBlacks();
 };
 
 abalone::abalone()
