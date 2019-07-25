@@ -6,6 +6,8 @@ class abalone
 {
 	vector<vector<int>> board;
 	vector<int> getCoordinates(char *s);
+	int noOfWhites;
+	int noOfBlacks;
 
 public:
 	abalone();
@@ -17,8 +19,8 @@ public:
 	bool isPosValid();          // entered coordinates exist on board
 	int mod();					//tokens moving
 	bool winner();				// two players are 0 and 1
-	int noOfWhites();
-	int noOfBlacks();
+	int getWhites();
+	int getBlacks();
 };
 
 abalone::abalone()
