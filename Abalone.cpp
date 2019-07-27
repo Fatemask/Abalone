@@ -23,14 +23,13 @@ public:
 
 	bool isValid();			will call all validation functions
 	bool isStringValid();		string is properly entered
-	bool isPosValid();		entered coordinates exist on board
 	bool winner();			two players are 0 and 1
 
 	*/
 
 	// member functions
 	vector<int> getPair(string s); // gets the indices of an RD pair
-	vector<vector<int>> getCoordinates(string &r1d1, string &r2d2, string r3d3); // gets the coordinate list of a string
+	vector<vector<vector<int>>> getCoordinates(string &r1d1, string &r2d2, string r3d3); // gets the coordinate list of a string
 	int mod(string x1y1, string x2y2); // returns true if total marbles selected is valid
 	string getDirection(string rdi, string rdf); // calculates the direction to go in
 	vector<vector<int>> calcFinalPosition(vector<vector<int>> coor, string dir); // calculates the final position to move to
@@ -134,10 +133,12 @@ vector<int> abalone::getPair(string s)
 	return xy;
 }
 
-vector<vector<int>> abalone::getCoordinates(string &r1d1, string &r2d2, string r3d3)
+vector<vector<vector<int>>> abalone::getCoordinates(string &r1d1, string &r2d2, string r3d3)
 {
 	// R: Row D: Diagonal
-	vector<vector<int>> coordinates;
+	vector<vector<int>> iniCoor;
+	vector<vector<int>> finCoor;
+
 	if (mod(r2d2, r3d3) < mod(r1d1, r3d3) || mod(r1d1, r3d3) == invalid) // x1y1 must be the one closer to x3y3
 	{
 		swap(r1d1, r2d2);
@@ -145,50 +146,48 @@ vector<vector<int>> abalone::getCoordinates(string &r1d1, string &r2d2, string r
 	if (mod(r1d1, r3d3) != 2) // final position of marble should be within one block of the final marble
 	{
 		cout << "Invalid Move!" << endl;
-		return coordinates;
+		return { iniCoor, finCoor };
 	}
 
+	string dir = getDirection(r1d1, r3d3);
+	int deltaX, deltaY;
+	/*
+		deltaX and deltaY will indicate what to add to the current position
+		for west, decrease col; for east increase col....
+	*/
+	if (dir == "WW") { deltaX = 0;	deltaY = -1; }
+	else if (dir == "EE") { deltaX = 0;	deltaY = 1; }
+	else if (dir == "NW") { deltaX = -1;	deltaY = 0; }
+	else if (dir == "SE") { deltaX = 1;	deltaY = 0; }
+	else if (dir == "NE") { deltaX = -1;	deltaY = 1; }
+	else if (dir == "SW") { deltaX = 1;	deltaY = -1; }
+
+	string i = r1d1;
+	string j = i;
+	j[0] += deltaX;	j[1] += deltaY;
+
+	int deltaI0, deltaJ0, deltaI1, deltaJ1;
 
 	if (r1d1[0] == r2d2[0]) // marbles lie along the same row
 	{
 		if (r1d1[1] < r2d2[1]) // eg: A5, A7
 		{
-			string i = r1d1;
-			for (; i != r2d2; i[1]++)
-			{
-				coordinates.push_back(getPair(i));
-			}
-			coordinates.push_back(getPair(i));
+			deltaI0 = 0; deltaI1 = 1; deltaJ0 = 0; deltaJ1 = 1;
 		}
 		else // eg: A7, A5
 		{
-			string i = r1d1;
-			for (; i != r2d2; i[1]--)
-			{
-				coordinates.push_back(getPair(i));
-			}
-			coordinates.push_back(getPair(i));
+			deltaI0 = 0; deltaI1 = -1; deltaJ0 = 0; deltaJ1 = -1;
 		}
 	}
 	else if (r1d1[1] == r2d2[1]) // marbles lie along same diagonal
 	{
 		if (r1d1[0] < r2d2[0]) // eg: A5, C5
 		{
-			string i = r1d1;
-			for (; i != r2d2; i[0]++)
-			{
-				coordinates.push_back(getPair(i));
-			}
-			coordinates.push_back(getPair(i));
+			deltaI0 = 1; deltaI1 = 0; deltaJ0 = 1; deltaJ1 = 0;
 		}
 		else // eg: C5, A5
 		{
-			string i = r1d1;
-			for (; i != r2d2; i[0]--)
-			{
-				coordinates.push_back(getPair(i));
-			}
-			coordinates.push_back(getPair(i));
+			deltaI0 = -1; deltaI1 = 0; deltaJ0 = -1; deltaJ1 = 0;
 		}
 	}
 	else // marbles aligned along NE direction
@@ -197,26 +196,24 @@ vector<vector<int>> abalone::getCoordinates(string &r1d1, string &r2d2, string r
 		{
 			if (r1d1[1] < r2d2[1]) // eg: I1, G3
 			{
-				string i = r1d1;
-				for (; i != r2d2; i[0]--, i[1]++)
-				{
-					coordinates.push_back(getPair(i));
-				}
-				coordinates.push_back(getPair(i));
+				deltaI0 = -1; deltaI1 = 1; deltaJ0 = -1; deltaJ1 = 1;
 			}
 			else // eg: G3, I1
 			{
-				string i = r1d1;
-				for (; i != r2d2; i[0]++, i[1]--)
-				{
-					coordinates.push_back(getPair(i));
-				}
-				coordinates.push_back(getPair(i));
+				deltaI0 = 1; deltaI1 = -1; deltaJ0 = 1; deltaJ1 = -1;
 			}
 		}
 	}
 
-	return coordinates;
+	for (; i != r2d2; i[0] += deltaI0, i[1] += deltaI1, j[0] += deltaJ0, j[1] += deltaJ1)
+	{
+		iniCoor.push_back(getPair(i));
+		finCoor.push_back(getPair(j));
+	}
+	iniCoor.push_back(getPair(i));
+	finCoor.push_back(getPair(j));
+
+	return { iniCoor, finCoor };
 }
 
 void abalone::displayMemory()
@@ -236,7 +233,7 @@ string abalone::getDirection(string rdi, string rdf)
 		if (rdi[1] < rdf[1]) return "EE"; // going east
 		else return "WW"; // going west
 	}
-	else if(rdi[1] == rdf[1]) // along same diagonal
+	else if (rdi[1] == rdf[1]) // along same diagonal
 	{
 		if (rdi[0] < rdf[0]) return "SE";
 		else return "NW";
@@ -260,40 +257,19 @@ void abalone::move(vector<vector<int>> initialCoor, vector<vector<int>> finalCoo
 	}
 }
 
-vector<vector<int>> abalone::calcFinalPosition(vector<vector<int>> coor, string dir)
-{
-	vector<vector<int>> finalCoor;
-	int deltaX, deltaY;
-	/*
-		deltaX and deltaY will indicate what to add to the current position
-		for west, decrease col; for east increase col....
-	*/
-	if (dir == "WW") { deltaX = 0;	deltaY = -1; }
-	else if (dir == "EE") { deltaX = 0;	deltaY = 1; }
-	else if (dir == "NW") { deltaX = -1;	deltaY = 0; }
-	else if (dir == "SE") { deltaX = 1;	deltaY = 0; }
-	else if (dir == "NE") { deltaX = -1;	deltaY = 1; }
-	else if (dir == "SW") { deltaX = 1;	deltaY = -1; }
-	for (int i = 0; i < coor.size(); i++)
-	{
-		finalCoor.push_back({ coor[i][0] + deltaX, coor[i][1] + deltaY });
-	}
-	return finalCoor;
-}
-
-bool abalone::inBoard(vector<vector<int>> &finalPos){
+bool abalone::inBoard(vector<vector<int>> &finalPos) {
 	bool flag = false;
 	const int rowIndex = 8;
 	int count = 0, i, index;
-	for(i = 0; i < finalPos.size(); i++){
-		if(finalPos[i][0] <= rowIndex && finalPos[i][0] >= 0){
+	for (i = 0; i < finalPos.size(); i++) {
+		if (finalPos[i][0] <= rowIndex && finalPos[i][0] >= 0) {
 			index = finalPos[i][0];
-			if(finalPos[i][1] <= board[index].size() && finalPos[i][1] >= 0){
+			if (finalPos[i][1] <= board[index].size() && finalPos[i][1] >= 0) {
 				count++;
 			}
 		}
 	}
-	if(count == i){
+	if (count == i) {
 		flag = true;
 	}
 	return flag;
@@ -319,10 +295,12 @@ int main()
 	getline(cin, s);
 	// getting individual points on the board
 	string rd1 = s.substr(0, 2), rd2 = s.substr(3, 2), rd3 = s.substr(6, 2);
-	vector<vector<int>> iniCoor = a.getCoordinates(rd1, rd2, rd3);
-	string dir = a.getDirection(rd1, rd3);
-	vector<vector<int>> finCoor = a.calcFinalPosition(iniCoor, dir);
-	a.move(iniCoor, finCoor);
+	vector<vector<vector<int>>> coordinates = a.getCoordinates(rd1, rd2, rd3);
+	vector<vector<int>> iniCoor = coordinates[0];
+	vector<vector<int>> finCoor = coordinates[1];
+	coordinates.erase(coordinates.begin(), coordinates.end());
+	if(a.inBoard(finCoor)) a.move(iniCoor, finCoor);
+	else cout << "Invalid Move!" << endl;
 	a.displayGame();
 	getchar();
 }
