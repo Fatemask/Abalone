@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <math.h>
+#include <conio.h>
 #define invalid 1000
 using namespace std;
 
@@ -21,7 +22,6 @@ public:
 
 	TODO
 
-	void move();
 	bool isValid();			will call all validation functions
 	bool isStringValid();		string is properly entered
 	bool isPosValid();		entered coordinates exist on board
@@ -35,8 +35,10 @@ public:
 	vector<int> getPair(string s); // gets the indices of an RD pair
 	vector<vector<int>> getCoordinates(string &r1d1, string &r2d2, string r3d3); // gets the coordinate list of a string
 	int mod(string x1y1, string x2y2); // returns true if total marbles selected is valid
-	string getDirection(string rdi, string rdf); // returns direction of movement
-
+	string getDirection(string rdi, string rdf); // calculates the direction to go in
+	vector<vector<int>> calcFinalPosition(vector<vector<int>> coor, string dir); // calculates the final position to move to
+	void move(vector<vector<int>> initialCoor, vector<vector<int>> finalCoor); // moves pieces from initial to final position
+	
 };
 
 abalone::abalone()
@@ -247,6 +249,32 @@ string abalone::getDirection(string rdi, string rdf)
 	}
 }
 
+void abalone::move(vector<vector<int>> initialCoor, vector<vector<int>> finalCoor)
+{
+	for (int i = 0; i < initialCoor.size(); i++)
+	{
+		board[finalCoor[i][0]][finalCoor[i][1]] = board[initialCoor[i][0]][initialCoor[i][1]];
+		board[initialCoor[i][0]][initialCoor[i][1]] = -1;
+	}
+}
+
+vector<vector<int>> abalone::calcFinalPosition(vector<vector<int>> coor, string dir)
+{
+	vector<vector<int>> finalCoor;
+	int deltaX, deltaY;
+	if (dir == "WW") { deltaX = 0;	deltaY = -1; }
+	else if (dir == "EE") { deltaX = 0;	deltaY = 1; }
+	else if (dir == "NW") { deltaX = -1;	deltaY = 0; }
+	else if (dir == "SE") { deltaX = 1;	deltaY = 0; }
+	else if (dir == "NE") { deltaX = -1;	deltaY = 1; }
+	else if (dir == "SW") { deltaX = 1;	deltaY = -1; }
+	for (int i = 0; i < coor.size(); i++)
+	{
+		finalCoor.push_back({ coor[i][0] + deltaX, coor[i][1] + deltaY });
+	}
+	return finalCoor;
+}
+
 int main()
 {
 	abalone a;
@@ -257,8 +285,10 @@ int main()
 	getline(cin, s);
 	// getting individual points on the board
 	string rd1 = s.substr(0, 2), rd2 = s.substr(3, 2), rd3 = s.substr(6, 2);
-	vector<vector<int>> coor = a.getCoordinates(rd1, rd2, rd3);
-	for (int i = 0; i < coor.size(); i++) cout << coor[i][0] << " " << coor[i][1] << endl;
-	cout << a.getDirection(rd1, rd3) << endl;
-	system("pause");
+	vector<vector<int>> iniCoor = a.getCoordinates(rd1, rd2, rd3);
+	string dir = a.getDirection(rd1, rd3);
+	vector<vector<int>> finCoor = a.calcFinalPosition(iniCoor, dir);
+	a.move(iniCoor, finCoor);
+	a.display();
+	_getch();
 }
