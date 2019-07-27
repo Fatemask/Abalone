@@ -262,7 +262,7 @@ bool abalone::inBoard(vector<vector<int>> &finalPos) {
 	const int rowIndex = 8;
 	int count = 0, i, index;
 	for (i = 0; i < finalPos.size(); i++) {
-		if (finalPos[i][0] <= rowIndex && finalPos[i][0] >= 0) {
+		if (finalPos[i][0] < rowIndex && finalPos[i][0] >= 0) {
 			index = finalPos[i][0];
 			if (finalPos[i][1] <= board[index].size() && finalPos[i][1] >= 0) {
 				count++;
@@ -294,13 +294,18 @@ int main()
 	// max one step further
 	getline(cin, s);
 	// getting individual points on the board
-	string rd1 = s.substr(0, 2), rd2 = s.substr(3, 2), rd3 = s.substr(6, 2);
-	vector<vector<vector<int>>> coordinates = a.getCoordinates(rd1, rd2, rd3);
-	vector<vector<int>> iniCoor = coordinates[0];
-	vector<vector<int>> finCoor = coordinates[1];
-	coordinates.erase(coordinates.begin(), coordinates.end());
-	if(a.inBoard(finCoor)) a.move(iniCoor, finCoor);
-	else cout << "Invalid Move!" << endl;
-	a.displayGame();
+	while (s != "exit")
+	{
+		string rd1 = s.substr(0, 2), rd2 = s.substr(3, 2), rd3 = s.substr(6, 2);
+		vector<vector<vector<int>>> coordinates = a.getCoordinates(rd1, rd2, rd3);
+		vector<vector<int>> iniCoor = coordinates[0];
+		vector<vector<int>> finCoor = coordinates[1];
+		coordinates.erase(coordinates.begin(), coordinates.end());
+		if (a.inBoard(finCoor)) a.move(iniCoor, finCoor);
+		else cout << "Invalid Move!" << endl;
+		a.displayGame();
+		getline(cin, s);
+	}
+	cout << "Press any key to continue...";
 	getchar();
 }
