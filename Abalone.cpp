@@ -2,7 +2,6 @@
 #include <string>
 #include <vector>
 #include <math.h>
-#include <conio.h>
 #define invalid 1000
 using namespace std;
 
@@ -15,8 +14,8 @@ class abalone
 
 public:
 	abalone();
-	void display(); // display in game format
-	void disp(); // display in memory format
+	void displayGame(); // display in game format
+	void displayMemory(); // display in memory format
 
 	/*
 
@@ -38,6 +37,7 @@ public:
 	void move(vector<vector<int>> initialCoor, vector<vector<int>> finalCoor); // moves pieces from initial to final position
 	int getWhites();
 	int getBlacks();
+	bool inBoard(vector<vector<int>>&v); //returns true if move is in board; pass vec in row,col
 };
 
 abalone::abalone()
@@ -56,14 +56,14 @@ abalone::abalone()
 	  {  -1,  1,  1,  -1,  -1,  0,  0,  -1},
 
 		 {  1,  1,  1,  -1,  0,  0,  0},
-		 
+
 		  {  1,  1,  -1,  -1,  0,  0},
 
 		   {  -1,  -1,  -1,  -1,  -1}
 	};
 }
 
-void abalone::display()
+void abalone::displayGame()
 {
 	char row = 'A';
 	int dia = 9;
@@ -219,7 +219,7 @@ vector<vector<int>> abalone::getCoordinates(string &r1d1, string &r2d2, string r
 	return coordinates;
 }
 
-void abalone::disp()
+void abalone::displayMemory()
 {
 	for (int i = 0; i < board.size(); i++)
 	{
@@ -281,6 +281,24 @@ vector<vector<int>> abalone::calcFinalPosition(vector<vector<int>> coor, string 
 	return finalCoor;
 }
 
+bool abalone::inBoard(vector<vector<int>> &finalPos){
+	bool flag = false;
+	const int rowIndex = 8;
+	int count = 0, i, index;
+	for(i = 0; i < finalPos.size(); i++){
+		if(finalPos[i][0] <= rowIndex && finalPos[i][0] >= 0){
+			index = finalPos[i][0];
+			if(finalPos[i][1] <= board[index].size() && finalPos[i][1] >= 0){
+				count++;
+			}
+		}
+	}
+	if(count == i){
+		flag = true;
+	}
+	return flag;
+}
+
 int abalone::getBlacks()
 {
 	return noOfBlacks;
@@ -294,7 +312,7 @@ int abalone::getWhites()
 int main()
 {
 	abalone a;
-	a.display();
+	a.displayGame();
 	string s;
 	// input form : initial marble, final marble, where you want to move the closer marble to
 	// max one step further
@@ -305,6 +323,6 @@ int main()
 	string dir = a.getDirection(rd1, rd3);
 	vector<vector<int>> finCoor = a.calcFinalPosition(iniCoor, dir);
 	a.move(iniCoor, finCoor);
-	a.display();
-	_getch();
+	a.displayGame();
+	getchar();
 }
