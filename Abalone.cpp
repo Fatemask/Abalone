@@ -26,8 +26,6 @@ public:
 	bool isStringValid();		string is properly entered
 	bool isPosValid();		entered coordinates exist on board
 	bool winner();			two players are 0 and 1
-	int getWhites();
-	int getBlacks();
 
 	*/
 
@@ -38,29 +36,30 @@ public:
 	string getDirection(string rdi, string rdf); // calculates the direction to go in
 	vector<vector<int>> calcFinalPosition(vector<vector<int>> coor, string dir); // calculates the final position to move to
 	void move(vector<vector<int>> initialCoor, vector<vector<int>> finalCoor); // moves pieces from initial to final position
-	
+	int getWhites();
+	int getBlacks();
 };
 
 abalone::abalone()
 {
 	board = {
-			{  0,  0,  0,  0,  0},
+			{  -1, -1, -1, -1, -1},
 
-		  {  0,  0,  0,  0,  0,  0},
+		  {  0,  0,  -1,  -1,  1,  1},
 
-		{ -1, -1,  0,  0,  0, -1, -1},
+		 {  0,  0,  0,  -1,  1,  1,  1},
 
-	  { -1, -1, -1, -1, -1, -1, -1, -1},
+	  {  -1,  0,  0,  -1,  -1,  1,  1,  -1},
 
-	{ -1, -1, -1, -1, -1, -1, -1, -1, -1},
+  {  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1},
 
-	  { -1, -1, -1, -1, -1, -1, -1, -1},
+	  {  -1,  1,  1,  -1,  -1,  0,  0,  -1},
 
-		{ -1, -1,  1,  1,  1, -1, -1},
+		 {  1,  1,  1,  -1,  0,  0,  0},
+		 
+		  {  1,  1,  -1,  -1,  0,  0},
 
-		  {  1,  1,  1,  1,  1,  1},
-
-			{  1,  1,  1,  1,  1}
+		   {  -1,  -1,  -1,  -1,  -1}
 	};
 }
 
@@ -253,7 +252,10 @@ void abalone::move(vector<vector<int>> initialCoor, vector<vector<int>> finalCoo
 {
 	for (int i = 0; i < initialCoor.size(); i++)
 	{
+		// new coordinates will get the current pieces
 		board[finalCoor[i][0]][finalCoor[i][1]] = board[initialCoor[i][0]][initialCoor[i][1]];
+
+		// old coordinates will be declared empty
 		board[initialCoor[i][0]][initialCoor[i][1]] = -1;
 	}
 }
@@ -262,6 +264,10 @@ vector<vector<int>> abalone::calcFinalPosition(vector<vector<int>> coor, string 
 {
 	vector<vector<int>> finalCoor;
 	int deltaX, deltaY;
+	/*
+		deltaX and deltaY will indicate what to add to the current position
+		for west, decrease col; for east increase col....
+	*/
 	if (dir == "WW") { deltaX = 0;	deltaY = -1; }
 	else if (dir == "EE") { deltaX = 0;	deltaY = 1; }
 	else if (dir == "NW") { deltaX = -1;	deltaY = 0; }
@@ -273,6 +279,16 @@ vector<vector<int>> abalone::calcFinalPosition(vector<vector<int>> coor, string 
 		finalCoor.push_back({ coor[i][0] + deltaX, coor[i][1] + deltaY });
 	}
 	return finalCoor;
+}
+
+int abalone::getBlacks()
+{
+	return noOfBlacks;
+}
+
+int abalone::getWhites()
+{
+	return noOfWhites;
 }
 
 int main()
