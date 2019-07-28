@@ -17,26 +17,20 @@ public:
 	void displayGame(); // display in game format
 	void displayMemory(); // display in memory format
 
-	/*
-
-	TODO
-
-	bool isValid();			will call all validation functions
-	bool isStringValid();		string is properly entered
-	bool winner();			two players are 0 and 1
-
-	*/
-
 	// member functions
 	vector<int> getPair(string s); // gets the indices of an RD pair
 	vector<vector<vector<int>>> getCoordinates(string &r1d1, string &r2d2, string r3d3); // gets the coordinate list of a string
-	int mod(string x1y1, string x2y2); // returns true if total marbles selected is valid
+	int mod(string x1y1, string x2y2); // returns marbles selected
 	string getDirection(string rdi, string rdf); // calculates the direction to go in
-	vector<vector<int>> calcFinalPosition(vector<vector<int>> coor, string dir); // calculates the final position to move to
 	void move(vector<vector<int>> initialCoor, vector<vector<int>> finalCoor); // moves pieces from initial to final position
 	int getWhites();
 	int getBlacks();
 	bool inBoard(vector<vector<int>>&v); //returns true if move is in board; pass vec in row,col
+	int winner(); // returns winners number
+	void play(); // actual gameplay function
+	vector<vector<vector<int>>> isValid(string s); // returns initial and final coordinates if the move is valid
+													// else will return an empty vector
+	void adjust(string &r1d1, string &r2d2, string r3d3); // r1d1 should be the marble next to the final position
 };
 
 abalone::abalone()
@@ -133,21 +127,19 @@ vector<int> abalone::getPair(string s)
 	return xy;
 }
 
+void abalone::adjust(string &r1d1, string &r2d2, string r3d3)
+{
+	if (mod(r2d2, r3d3) < mod(r1d1, r3d3) || mod(r1d1, r3d3) == invalid) // x1y1 must be the one closer to x3y3
+	{
+		swap(r1d1, r2d2);
+	}
+}
+
 vector<vector<vector<int>>> abalone::getCoordinates(string &r1d1, string &r2d2, string r3d3)
 {
 	// R: Row D: Diagonal
 	vector<vector<int>> iniCoor;
 	vector<vector<int>> finCoor;
-
-	if (mod(r2d2, r3d3) < mod(r1d1, r3d3) || mod(r1d1, r3d3) == invalid) // x1y1 must be the one closer to x3y3
-	{
-		swap(r1d1, r2d2);
-	}
-	if (mod(r1d1, r3d3) != 2) // final position of marble should be within one block of the final marble
-	{
-		cout << "Invalid Move!" << endl;
-		return { iniCoor, finCoor };
-	}
 
 	string dir = getDirection(r1d1, r3d3);
 	int deltaX, deltaY;
@@ -262,9 +254,9 @@ bool abalone::inBoard(vector<vector<int>> &finalPos) {
 	const int rowIndex = 8;
 	int count = 0, i, index;
 	for (i = 0; i < finalPos.size(); i++) {
-		if (finalPos[i][0] < rowIndex && finalPos[i][0] >= 0) {
+		if (finalPos[i][0] <= rowIndex && finalPos[i][0] >= 0) {
 			index = finalPos[i][0];
-			if (finalPos[i][1] <= board[index].size() && finalPos[i][1] >= 0) {
+			if (finalPos[i][1] < board[index].size() && finalPos[i][1] >= 0) {
 				count++;
 			}
 		}
@@ -285,27 +277,75 @@ int abalone::getWhites()
 	return noOfWhites;
 }
 
-int main()
+int abalone::winner()
 {
-	abalone a;
-	a.displayGame();
+	if (noOfBlacks <= 8) return 0;
+	else if (noOfWhites <= 8) return 1;
+	else return -1;
+}
+
+vector<vector<vector<int>>> abalone::isValid(string s)
+{
+
+	// TODO is the string valid
+	// if invalid return false
+
+	vector<vector<vector<int>>> falseVec;
+	vector<vector<vector<int>>> coordinates;
+
+	string rd1 = s.substr(0, 2), rd2 = s.substr(3, 2), rd3 = s.substr(6, 2);
+	adjust(rd1, rd2, rd3);
+
+	// checking if number of marbles selected is 1-3
+	if (mod(rd1, rd2) < 1 || mod(rd1, rd2) > 3) return falseVec;
+
+	// checking if final position is within 1 step of initial position
+	if (mod(rd1, rd3) != 2) return falseVec;
+
+	// checking if final coordinates lie in board
+	coordinates = getCoordinates(rd1, rd2, rd3);
+	if (!inBoard(coordinates[1])) return falseVec;
+
+	return coordinates;
+}
+
+void abalone::play()
+{
 	string s;
+	int activePlayer = 0; // assuming white starts
+	cout << "White's Move: ";
 	// input form : initial marble, final marble, where you want to move the closer marble to
 	// max one step further
 	getline(cin, s);
 	// getting individual points on the board
-	while (s != "exit")
+	while (winner() != -1)
 	{
-		string rd1 = s.substr(0, 2), rd2 = s.substr(3, 2), rd3 = s.substr(6, 2);
-		vector<vector<vector<int>>> coordinates = a.getCoordinates(rd1, rd2, rd3);
-		vector<vector<int>> iniCoor = coordinates[0];
-		vector<vector<int>> finCoor = coordinates[1];
-		coordinates.erase(coordinates.begin(), coordinates.end());
-		if (a.inBoard(finCoor)) a.move(iniCoor, finCoor);
+		vector<vector<vector<int>>> coor = isValid(s); // returns an empty vector for a false move
+														// if move is valid, gives us initial and final coordinates
+		
+		if (coor.size()) // move is valid
+		{
+			move(coor[0], coor[1]);
+			activePlayer = !activePlayer; // switch players
+		}
+
 		else cout << "Invalid Move!" << endl;
-		a.displayGame();
+
+		displayGame();
+
+		(activePlayer) ? cout << "Black's Move: " : cout << "White's Move: ";
 		getline(cin, s);
+		if (s == "exit") return;
 	}
+	(winner()) ? cout << "Black Wins!" << endl : cout << "White Wins!" << endl;
+	return;
+}
+
+int main()
+{
+	abalone a;
+	a.displayGame();
+	a.play();
 	cout << "Press any key to continue...";
 	getchar();
 }
