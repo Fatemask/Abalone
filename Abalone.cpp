@@ -31,6 +31,7 @@ public:
 	vector<vector<vector<int>>> isValid(string s); // returns initial and final coordinates if the move is valid
 													// else will return an empty vector
 	void adjust(string &r1d1, string &r2d2, string r3d3); // r1d1 should be the marble next to the final position
+	bool occupied(vector<vector<int> >fc)//checks if marble can move.
 };
 
 abalone::abalone()
@@ -340,6 +341,22 @@ void abalone::play()
 	(winner()) ? cout << "Black Wins!" << endl : cout << "White Wins!" << endl;
 	return;
 }
+bool occupied(vector<vector<int> >fc)//occupied function.
+{
+
+    for(int i=0;i<fc.size();i++)
+    {
+    int x=fc.[i][0];
+    int y=fc.[i][1];
+    if(board[x][y]!=-1)
+    {
+        return false;
+    }
+    }
+    return true;
+
+}
+
 
 int main()
 {
